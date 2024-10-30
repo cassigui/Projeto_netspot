@@ -1,7 +1,7 @@
-import './CrudComponent.css';
-import './ResultadoComponent.css';
-import Crud from "./CrudComponent";
-import Resultado from './ResultadoComponent';
+import './components/CrudComponent.css';
+import './components/ResultadoComponent.css';
+import Crud from "./components/CrudComponent";
+import Resultado from './components/ResultadoComponent';
 
 function App() {
 
