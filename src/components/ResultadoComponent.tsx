@@ -1,33 +1,73 @@
+import { useEffect, useState, useMemo } from "react";
+
 function Resultado() {
+  const [dadosTabela, setDadosTabela] = useState<
+    Array<{
+      local: string;
+      nivelSinal: string;
+      velocidadeSinal: string;
+      interferencia: string;
+    }>
+  >([]);
+
+  useEffect(() => {
+    const carregarDados = () => {
+      const dados = Object.keys(localStorage)
+        .filter((key) => key) // Filter out null or undefined keys
+        .map((key) => {
+          const dado = localStorage.getItem(key);
+          return dado ? JSON.parse(dado) : null;
+        })
+        .filter(Boolean); // Filter out null values
+
+      setDadosTabela(dados);
+    };
+
+    carregarDados();
+    // Define o listener para atualizar os dados quando o evento "atualizarTabela" for emitido
+    const atualizarTabelaListener = () => carregarDados();
+    window.addEventListener("atualizarTabela", atualizarTabelaListener);
+
+    // Remove o listener quando o componente é desmontado
+    return () => {
+      window.removeEventListener("atualizarTabela", atualizarTabelaListener);
+    };
+  }, []);
+
+  const tabelaContent = useMemo(
+    () =>
+      dadosTabela.map((dado, index) => (
+        <tr key={index}>
+          <td>{dado.local}</td>
+          <td>{dado.nivelSinal}</td>
+          <td>{dado.velocidadeSinal}</td>
+          <td>{dado.interferencia}</td>
+        </tr>
+      )),
+    [dadosTabela]
+  );
+
   return (
-    <>
-      <div className='container'>
+    <div className="container">
+      <div className="resultados">
+        <div className="grafico"></div>
 
-        <div className="resultados">
-          <div className="grafico"></div>
-
-          <div>
+        <div>
           <table>
-            <tr>
-              <th>Local</th>
-              <th>Nível</th>
-              <th>Velocidade</th>
-              <th>Interferência</th>
-            </tr>
-            <tr>
-              <td>UTFPR</td>
-              <td>256</td>
-              <td>5.7</td>
-              <td>1.0</td>
-            </tr>
+            <thead>
+              <tr>
+                <th>Local</th>
+                <th>Nível</th>
+                <th>Velocidade</th>
+                <th>Interferência</th>
+              </tr>
+            </thead>
+            <tbody>{tabelaContent}</tbody>
           </table>
-          </div>
-
         </div>
-
       </div>
-    </>
-  )
+    </div>
+  );
 }
 
 export default Resultado;
