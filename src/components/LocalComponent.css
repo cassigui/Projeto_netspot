@@ -23,16 +23,6 @@
   margin: 10px 5px;
 }
 
-.container form select {
-  background: rgb(167, 164, 164);
-  border: 1px solid white;
-  border-radius: 10px;
-  padding: 15px 10px 15px 10px;
-  width: 100%;
-  height: fit-content;
-  margin: 10px 5px;
-}
-
 .container form input::placeholder {
   color: rgb(109, 109, 109);
 }
