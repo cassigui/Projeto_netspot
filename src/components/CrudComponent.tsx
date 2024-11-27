@@ -1,19 +1,21 @@
-import { ChangeEvent, FormEvent, useState } from "react";
+import { FormEvent, useState, useEffect } from "react";
 
 function Crud() {
   const initialFormState = {
     local: "",
     nivelSinal: "",
-    nghz: "", // Para o rádio button na primeira linha
+    nghz: "",
     interferencia: "",
     velocidadeSinal: "",
-    vghz: "", // Para o rádio button na segunda linha
+    vghz: "",
   };
 
   const [formData, setFormData] = useState(initialFormState);
+  const [locais, setLocais] = useState<
+    { id: string; local: string; dateTime: string }[]
+  >([]);
 
-  // Função para atualizar o estado de cada campo
-  const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setFormData((prevData) => ({
       ...prevData,
@@ -21,7 +23,6 @@ function Crud() {
     }));
   };
 
-  // Função para manipular o envio do formulário
   const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const timestamp = new Date().toISOString();
@@ -32,6 +33,13 @@ function Crud() {
     window.dispatchEvent(new Event("atualizarTabela"));
   };
 
+  useEffect(() => {
+    const locaisSalvos = localStorage.getItem("locais");
+    if (locaisSalvos) {
+      setLocais(JSON.parse(locaisSalvos));
+    }
+  }, []);
+
   return (
     <>
       <div className="container">
@@ -40,14 +48,14 @@ function Crud() {
         <form action="submit" onSubmit={handleSubmit}>
           <div className="firstLine">
             <label htmlFor="local">Local:</label>
-            <input
-              type="text"
-              id="local"
-              name="local"
-              placeholder="Local: "
-              value={formData.local}
-              onChange={handleChange}
-            />
+            <select id="local" name="local" value={formData.local} onChange={handleChange}>
+              <option value="">Selecione um local</option>
+              {locais.map((local) => (
+                <option key={local.id} value={local.local}>
+                  {local.local}
+                </option>
+              ))}
+            </select>
 
             <label htmlFor="nivelSinal">Nível de Sinal:</label>
             <input
@@ -144,7 +152,6 @@ function Crud() {
             </div>
           </div>
           <input type="submit" name="enviar" id="enviar" value={"ENVIAR"} />
-          {/* <button type="submit" name="enviar" id="enviar">ENVIAR</button> */}
         </form>
       </div>
     </>

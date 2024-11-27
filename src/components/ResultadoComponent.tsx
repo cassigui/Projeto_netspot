@@ -1,4 +1,5 @@
 import { useEffect, useState, useMemo } from "react";
+import SimpleCharts from "./SimpleCharts";
 
 function Resultado() {
   const [dadosTabela, setDadosTabela] = useState<
@@ -50,8 +51,6 @@ function Resultado() {
   return (
     <div className="container">
       <div className="resultados">
-        <div className="grafico"></div>
-
         <div>
           <table>
             <thead>
@@ -64,6 +63,9 @@ function Resultado() {
             </thead>
             <tbody>{tabelaContent}</tbody>
           </table>
+        </div>
+        <div className="grafico">
+          <SimpleCharts/>
         </div>
       </div>
     </div>
