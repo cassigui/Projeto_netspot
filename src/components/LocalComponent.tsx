@@ -1,4 +1,6 @@
 import { ChangeEvent, FormEvent, useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom"; // Importar useNavigate para navegação
+import "./LocalComponent.css";
 
 function Local() {
   const initialFormState = {
@@ -6,9 +8,8 @@ function Local() {
   };
 
   const [formData, setFormData] = useState(initialFormState);
-  const [locais, setLocais] = useState<
-    { id: number; local: string; dateTime: string }[]
-  >([]);
+  const [locais, setLocais] = useState<{ id: number; local: string; dateTime: string }[]>([]);
+  const navigate = useNavigate(); // Usado para navegação programática
 
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -45,6 +46,18 @@ function Local() {
     setFormData(initialFormState);
   };
 
+  const handleViewMedicoes = (localId: number) => {
+    // Usar a navegação para a página de medições
+    navigate(`/medicoes/${localId}`);
+  };
+
+  const handleRemoveLocal = (localId: number) => {
+    // Filtra o local removido e atualiza o localStorage
+    const updatedLocais = locais.filter((entry) => entry.id !== localId);
+    localStorage.setItem("locais", JSON.stringify(updatedLocais));
+    setLocais(updatedLocais); // Atualiza o estado para refletir a remoção
+  };
+
   useEffect(() => {
     const storedData = localStorage.getItem("locais");
     if (storedData) {
@@ -53,50 +66,66 @@ function Local() {
   }, []);
 
   return (
-    <>
+    <section className="bg-light p-4 rounded">
       <div className="container">
-        <h1>Cadastro de Local</h1>
+        <h1 className="mb-4">Cadastro de Local</h1>
         <form onSubmit={handleSubmit}>
-          <div className="firstLine">
-            <label htmlFor="local">Local:</label>
+          <div className="mb-3">
+            <label htmlFor="local" className="form-label">Local:</label>
             <input
               type="text"
               id="local"
               name="local"
+              className="form-control"
               placeholder="Digite o local"
               value={formData.local}
               onChange={handleChange}
               required
             />
           </div>
-          <input type="submit" name="enviar" id="enviar" value={"CADASTRAR"} />
+          <button type="submit" className="btn btn-primary">Cadastrar</button>
         </form>
-      </div>
 
-      <h2>Locais Cadastrados</h2>
-      <div className="container">
-        <div className="resultados">
-          <table>
-            <thead>
-              <tr>
-                <th>ID</th>
-                <th>Local</th>
-                <th>Data e Hora</th>
-              </tr>
-            </thead>
-            <tbody>
-              {locais.map((entry) => (
-                <tr key={entry.id}>
-                  <td>{entry.id}</td>
-                  <td>{entry.local}</td>
-                  <td>{entry.dateTime}</td>
+        <div className="mt-5">
+          <h2>Locais Cadastrados</h2>
+          <div className="table-responsive">
+            <table className="table table-bordered table-striped">
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Local</th>
+                  <th>Data e Hora</th>
+                  <th>Opções</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {locais.map((entry) => (
+                  <tr key={entry.id}>
+                    <td>{entry.id}</td>
+                    <td>{entry.local}</td>
+                    <td>{entry.dateTime}</td>
+                    <td>
+                      <button
+                        className="btn btn-primary me-2 fw-bold text-light"
+                        onClick={() => handleViewMedicoes(entry.id)}
+                      >
+                        Ver Medições
+                      </button>
+                      <button
+                        className="btn btn-danger fw-bold text-light"
+                        onClick={() => handleRemoveLocal(entry.id)}
+                      >
+                        Remover
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
-    </>
+    </section>
   );
 }
 

@@ -1,5 +1,6 @@
 import { useEffect, useState, useMemo } from "react";
 import SimpleCharts from "./SimpleCharts";
+import "./ResultadoComponent.css"
 
 function Resultado() {
   const [dadosTabela, setDadosTabela] = useState<
@@ -25,11 +26,9 @@ function Resultado() {
     };
 
     carregarDados();
-    // Define o listener para atualizar os dados quando o evento "atualizarTabela" for emitido
     const atualizarTabelaListener = () => carregarDados();
     window.addEventListener("atualizarTabela", atualizarTabelaListener);
 
-    // Remove o listener quando o componente é desmontado
     return () => {
       window.removeEventListener("atualizarTabela", atualizarTabelaListener);
     };

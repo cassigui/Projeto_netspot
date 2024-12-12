@@ -1,16 +1,31 @@
 import { FC } from "react";
-import "./Navbar.css"; // Para os estilos (opcional)
+import { NavLink } from "react-router-dom"; // Importar o NavLink
+import "./Navbar.css";
 
 const Navbar: FC = () => {
   return (
-    <nav className="navbar">
-      <div className="navbar-container">
-        <ul className="navbar-links">
-          <li>
-            <a href="/locais" className="navbar-link">Locais</a>
+    <nav className="navbar navbar-expand-lg bg-dark fixed-top">
+      <div className="container jusitfy-content-center">
+        <ul className="navbar-nav ms-auto me-auto">
+          <li className="nav-item">
+            <NavLink
+              to="/locais"
+              className={({ isActive }) =>
+                isActive ? "nav-link text-primary fw-bold fs-5" : "nav-link text-white fs-5"
+              }
+            >
+              Locais
+            </NavLink>
           </li>
-          <li>
-            <a href="/medicoes" className="navbar-link">Medições</a>
+          <li className="nav-item">
+            <NavLink
+              to="/medicoes"
+              className={({ isActive }) =>
+                isActive ? "nav-link text-primary fw-bold fs-5" : "nav-link text-white fs-5"
+              }
+            >
+              Medições
+            </NavLink>
           </li>
         </ul>
       </div>

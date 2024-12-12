@@ -13,8 +13,10 @@
     "@emotion/react": "latest",
     "@emotion/styled": "latest",
     "@mui/x-charts": "^7.22.3",
+    "bootstrap": "^5.3.3",
     "projeto-netspot": "file:",
     "react": "^18.3.1",
+    "react-bootstrap": "^2.10.6",
     "react-dom": "^18.3.1",
     "react-router-dom": "^7.0.1"
   },
