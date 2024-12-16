@@ -80,6 +80,12 @@ function Crud() {
     window.dispatchEvent(new Event("atualizarTabela"));
   };
 
+  const handleRemoveLocal = (idMedicao: number) => {
+    const updatedMedicoes = medicoes.filter((entry) => entry.id !== idMedicao);
+    localStorage.setItem("medicoes", JSON.stringify(updatedMedicoes));
+    setMedicoes(updatedMedicoes);
+  };
+
   useEffect(() => {
     const locaisSalvos = localStorage.getItem("locais");
     if (locaisSalvos) {
@@ -91,7 +97,6 @@ function Crud() {
       setMedicoes(JSON.parse(medicoesSalvas));
     }
 
-    // Busca o local correspondente ao ID na URL
     if (idLocal) {
       const locaisList = JSON.parse(locaisSalvos || "[]");
       const foundLocal = locaisList.find(
@@ -271,6 +276,43 @@ function Crud() {
               ENVIAR
             </button>
           </form>
+        </div>
+        <div className="container mt-4">
+          <h2 className="mb-4">Medições</h2>
+          <div className="table-responsive">
+            <table className="table table-bordered table-striped">
+              <thead>
+                <tr>
+                  <th>Local</th>
+                  <th>Data e Hora</th>
+                  <th>Nível de Sinal</th>
+                  <th>Frequência</th>
+                  <th>Interferência</th>
+                  <th>Velocidade do Sinal</th>
+                </tr>
+              </thead>
+              <tbody>
+                {medicoes
+                  .filter((entry) => entry.local === formData.local)
+                  .map((entry) => (
+                    <tr key={entry.id}>
+                      <td>{entry.local}</td>
+                      <td>{entry.dateTime}</td>
+                      <td>{entry.nivelSinal}</td>
+                      <td>{entry.nghz}</td>
+                      <td>{entry.interferencia}</td>
+                      <td>{entry.velocidadeSinal}</td>
+                      <td>                      <button
+                        className="btn btn-danger fw-bold text-light"
+                        onClick={() => handleRemoveLocal(entry.id)}
+                      >
+                        Remover
+                      </button></td>
+                    </tr>
+                  ))}
+              </tbody>
+            </table>
+          </div>
         </div>
       </section>
     </>
