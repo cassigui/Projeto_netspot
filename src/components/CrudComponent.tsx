@@ -1,5 +1,5 @@
 import { FormEvent, useState, useEffect } from "react";
-import { BarChart } from "@mui/x-charts/BarChart";
+import { useParams } from "react-router-dom"; // Importar o hook useParams
 import "./CrudComponent.css";
 
 function Crud() {
@@ -21,13 +21,15 @@ function Crud() {
       nghz: string;
       interferencia: string;
       velocidadeSinal: string;
-      vghz: string;
+      // vghz: string;
       dateTime: string;
     }[]
   >([]);
   const [locais, setLocais] = useState<
     { id: number; local: string; dateTime: string }[]
   >([]);
+
+  const { idLocal } = useParams<{ idLocal: string }>(); // Captura o ID da URL
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
@@ -69,7 +71,11 @@ function Crud() {
     medicoesArray.push(newEntry);
     localStorage.setItem("medicoes", JSON.stringify(medicoesArray));
     setMedicoes(medicoesArray);
-    setFormData(initialFormState);
+    // setFormData(initialFormState);
+    setFormData((prevData) => ({
+      ...initialFormState, // Limpa os outros campos
+      local: prevData.local, // Preserva o valor do campo local
+    }));
 
     window.dispatchEvent(new Event("atualizarTabela"));
   };
@@ -84,12 +90,27 @@ function Crud() {
     if (medicoesSalvas) {
       setMedicoes(JSON.parse(medicoesSalvas));
     }
+
+    // Busca o local correspondente ao ID na URL
+    if (idLocal) {
+      const locaisList = JSON.parse(locaisSalvos || "[]");
+      const foundLocal = locaisList.find(
+        (local: { id: number }) => local.id === parseInt(idLocal, 10)
+      );
+
+      if (foundLocal) {
+        setFormData((prevData) => ({
+          ...prevData,
+          local: foundLocal.local,
+        }));
+      }
+    }
   }, []);
 
   return (
     <>
       <section className="bg-light p-4 rounded">
-      <div className="container mt-4">
+        <div className="container mt-4">
           <h1 className="mb-4">NOVA LEITURA DE REDE</h1>
 
           <form onSubmit={handleSubmit}>
@@ -98,20 +119,17 @@ function Crud() {
                 <label htmlFor="local" className="form-label">
                   Local:
                 </label>
-                <select
+                <input
+                  type="text"
                   id="local"
                   name="local"
-                  className="form-select"
+                  className="form-control"
                   value={formData.local}
                   onChange={handleChange}
-                >
-                  <option value="">Selecione um local</option>
-                  {locais.map((local) => (
-                    <option key={local.id} value={local.local}>
-                      {local.local}
-                    </option>
-                  ))}
-                </select>
+                  placeholder="Local"
+                  disabled
+                  required
+                ></input>
               </div>
 
               <div className="col-md-6 d-flex align-items-center">
@@ -207,7 +225,7 @@ function Crud() {
                   />
                 </div>
 
-                <div className="col-6">
+                {/* <div className="col-6">
                   <div className="row align-items-center ps-2 p-0 m-0">
                     <label htmlFor="vghz1" className="form-label">
                       Frequência:
@@ -245,7 +263,7 @@ function Crud() {
                       </label>
                     </div>
                   </div>
-                </div>
+                </div> */}
               </div>
             </div>
 
