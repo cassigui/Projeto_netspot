@@ -1,5 +1,8 @@
 import { FormEvent, useState, useEffect } from "react";
-import './CrudComponent.css'
+import { useParams } from "react-router-dom";
+import "./CrudComponent.css";
+import GraficoVelocidadeLocal from "./GraficoVelocidadeLocal";
+import GraficoSinalLocal from "./GraficoSinalLocal";
 
 function Crud() {
   const initialFormState = {
@@ -12,11 +15,27 @@ function Crud() {
   };
 
   const [formData, setFormData] = useState(initialFormState);
+  const [medicoes, setMedicoes] = useState<
+    {
+      id: number;
+      local: string;
+      nivelSinal: string;
+      nghz: string;
+      interferencia: string;
+      velocidadeSinal: string;
+      // vghz: string;
+      dateTime: string;
+    }[]
+  >([]);
   const [locais, setLocais] = useState<
-    { id: string; local: string; dateTime: string }[]
+    { id: number; local: string; dateTime: string }[]
   >([]);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+  const { idLocal } = useParams<{ idLocal: string }>(); // Captura o ID da URL
+
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+  ) => {
     const { name, value } = e.target;
     setFormData((prevData) => ({
       ...prevData,
@@ -24,20 +43,74 @@ function Crud() {
     }));
   };
 
+  const getCurrentDateTime = () => {
+    const now = new Date();
+    const day = String(now.getDate()).padStart(2, "0");
+    const month = String(now.getMonth() + 1).padStart(2, "0");
+    const year = now.getFullYear();
+    const hours = String(now.getHours()).padStart(2, "0");
+    const minutes = String(now.getMinutes()).padStart(2, "0");
+    const seconds = String(now.getSeconds()).padStart(2, "0");
+    return `${day}/${month}/${year} ${hours}:${minutes}:${seconds}`;
+  };
+
   const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    const timestamp = new Date().toISOString();
-    console.log(`Dados do formulário (${timestamp}):`, formData);
-    localStorage.setItem(timestamp, JSON.stringify(formData));
-    setFormData(initialFormState);
+
+    const storedData = localStorage.getItem("medicoes");
+    const medicoesArray = storedData ? JSON.parse(storedData) : [];
+    const newId = medicoesArray.length + 1;
+    const newEntry = {
+      id: newId,
+      local: formData.local,
+      nivelSinal: formData.nivelSinal,
+      nghz: formData.nghz,
+      interferencia: formData.interferencia,
+      velocidadeSinal: formData.velocidadeSinal,
+      vghz: formData.vghz,
+      dateTime: getCurrentDateTime(),
+    };
+    medicoesArray.push(newEntry);
+    localStorage.setItem("medicoes", JSON.stringify(medicoesArray));
+    setMedicoes(medicoesArray);
+    // setFormData(initialFormState);
+    setFormData((prevData) => ({
+      ...initialFormState, // Limpa os outros campos
+      local: prevData.local, // Preserva o valor do campo local
+    }));
 
     window.dispatchEvent(new Event("atualizarTabela"));
+  };
+
+  const handleRemoveMedicao = (idMedicao: number) => {
+    const updatedMedicoes = medicoes.filter((entry) => entry.id !== idMedicao);
+    localStorage.setItem("medicoes", JSON.stringify(updatedMedicoes));
+    setMedicoes(updatedMedicoes);
   };
 
   useEffect(() => {
     const locaisSalvos = localStorage.getItem("locais");
     if (locaisSalvos) {
       setLocais(JSON.parse(locaisSalvos));
+    }
+
+    const medicoesSalvas = localStorage.getItem("medicoes");
+    if (medicoesSalvas) {
+      setMedicoes(JSON.parse(medicoesSalvas));
+    }
+
+    if (idLocal) {
+      const locaisList = JSON.parse(locaisSalvos || "[]");
+      const foundLocal = locaisList.find(
+        (local: { id: number }) => local.id === parseInt(idLocal, 10)
+      );
+
+      if (foundLocal) {
+        setFormData((prevData) => ({
+          ...prevData,
+          local: foundLocal.local,
+        }));
+      }
     }
   }, []);
 
@@ -50,27 +123,27 @@ function Crud() {
           <form onSubmit={handleSubmit}>
             <div className="row mb-3">
               <div className="col-md-6">
-                <label htmlFor="local" className="form-label">Local:</label>
-                <select
+                <label htmlFor="local" className="form-label">
+                  Local:
+                </label>
+                <input
+                  type="text"
                   id="local"
                   name="local"
-                  className="form-select"
+                  className="form-control"
                   value={formData.local}
                   onChange={handleChange}
-                >
-                  <option value="">Selecione um local</option>
-                  {locais.map((local) => (
-                    <option key={local.id} value={local.local}>
-                      {local.local}
-                    </option>
-                  ))}
-                </select>
+                  placeholder="Local"
+                  disabled
+                  required
+                ></input>
               </div>
 
               <div className="col-md-6 d-flex align-items-center">
-
                 <div className="col-6">
-                  <label htmlFor="nivelSinal" className="form-label">Nível de Sinal:</label>
+                  <label htmlFor="nivelSinal" className="form-label">
+                    Nível de Sinal:
+                  </label>
                   <input
                     type="text"
                     id="nivelSinal"
@@ -85,7 +158,9 @@ function Crud() {
 
                 <div className="col-6">
                   <div className="row align-items-center ps-2 p-0 m-0">
-                    <label htmlFor="nghz1" className="form-label">Frequência:</label>
+                    <label htmlFor="nghz1" className="form-label">
+                      Frequência:
+                    </label>
 
                     <div className="col-6 p-0 m-0">
                       <input
@@ -98,7 +173,9 @@ function Crud() {
                         onChange={handleChange}
                         required
                       />
-                      <label htmlFor="nghz1" className="form-check-label">2.4ghz</label>
+                      <label htmlFor="nghz1" className="form-check-label">
+                        2.4ghz
+                      </label>
                     </div>
 
                     <div className="form-check col-6">
@@ -112,19 +189,20 @@ function Crud() {
                         onChange={handleChange}
                         required
                       />
-                      <label htmlFor="nghz2" className="form-check-label">5.0ghz</label>
+                      <label htmlFor="nghz2" className="form-check-label">
+                        5.0ghz
+                      </label>
                     </div>
                   </div>
-
                 </div>
-
               </div>
-
             </div>
 
             <div className="row mb-3">
               <div className="col-md-6">
-                <label htmlFor="interferencia" className="form-label">Interferência:</label>
+                <label htmlFor="interferencia" className="form-label">
+                  Interferência:
+                </label>
                 <input
                   type="text"
                   id="interferencia"
@@ -138,9 +216,10 @@ function Crud() {
               </div>
 
               <div className="col-md-6 d-flex align-items-center">
-
                 <div className="col-md-6">
-                  <label htmlFor="velocidadeSinal" className="form-label">Velocidade do Sinal:</label>
+                  <label htmlFor="velocidadeSinal" className="form-label">
+                    Velocidade do Sinal:
+                  </label>
                   <input
                     type="text"
                     id="velocidadeSinal"
@@ -153,9 +232,11 @@ function Crud() {
                   />
                 </div>
 
-                <div className="col-6">
+                {/* <div className="col-6">
                   <div className="row align-items-center ps-2 p-0 m-0">
-                    <label htmlFor="vghz1" className="form-label">Frequência:</label>
+                    <label htmlFor="vghz1" className="form-label">
+                      Frequência:
+                    </label>
 
                     <div className="col-6 p-0 m-0">
                       <input
@@ -168,7 +249,9 @@ function Crud() {
                         onChange={handleChange}
                         required
                       />
-                      <label htmlFor="vghz1" className="form-check-label">2.4ghz</label>
+                      <label htmlFor="vghz1" className="form-check-label">
+                        2.4ghz
+                      </label>
                     </div>
 
                     <div className="form-check col-6">
@@ -182,17 +265,62 @@ function Crud() {
                         onChange={handleChange}
                         required
                       />
-                      <label htmlFor="vghz2" className="form-check-label">5.0ghz</label>
+                      <label htmlFor="vghz2" className="form-check-label">
+                        5.0ghz
+                      </label>
                     </div>
                   </div>
-
-                </div>
+                </div> */}
               </div>
             </div>
 
-            <button type="submit" className="btn btn-primary">ENVIAR</button>
+            <button type="submit" className="btn btn-primary">
+              ENVIAR
+            </button>
           </form>
         </div>
+        <div className="container mt-4">
+          <h2 className="mb-4">Medições</h2>
+          <div className="table-responsive">
+            <table className="table table-bordered table-striped">
+              <thead>
+                <tr>
+                  <th>Local</th>
+                  <th>Data e Hora</th>
+                  <th>Nível de Sinal</th>
+                  <th>Frequência</th>
+                  <th>Interferência</th>
+                  <th>Velocidade do Sinal</th>
+                </tr>
+              </thead>
+              <tbody>
+                {medicoes
+                  .filter((entry) => entry.local === formData.local)
+                  .map((entry) => (
+                    <tr key={entry.id}>
+                      <td>{entry.local}</td>
+                      <td>{entry.dateTime}</td>
+                      <td>{entry.nivelSinal}</td>
+                      <td>{entry.nghz}</td>
+                      <td>{entry.interferencia}</td>
+                      <td>{entry.velocidadeSinal}</td>
+                      <td>
+                        {" "}
+                        <button
+                          className="btn btn-danger fw-bold text-light"
+                          onClick={() => handleRemoveMedicao(entry.id)}
+                        >
+                          Remover
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <GraficoVelocidadeLocal local={formData.local} medicoes={medicoes}></GraficoVelocidadeLocal>
+        <GraficoSinalLocal local={formData.local} medicoes={medicoes}></GraficoSinalLocal>
       </section>
     </>
   );

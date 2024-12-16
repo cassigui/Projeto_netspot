@@ -1,73 +1,139 @@
-import { useEffect, useState, useMemo } from "react";
-import SimpleCharts from "./SimpleCharts";
-import "./ResultadoComponent.css"
+import { useState, useEffect } from "react";
+import { BarChart } from "@mui/x-charts/BarChart";
 
 function Resultado() {
-  const [dadosTabela, setDadosTabela] = useState<
-    Array<{
+  const [medicoes, setMedicoes] = useState<
+    {
+      id: number;
       local: string;
       nivelSinal: string;
-      velocidadeSinal: string;
+      nghz: string;
       interferencia: string;
-    }>
+      velocidadeSinal: string;
+      vghz: string;
+      dateTime: string;
+    }[]
+  >([]);
+  const [locais, setLocais] = useState<
+    { id: number; local: string; dateTime: string }[]
   >([]);
 
   useEffect(() => {
-    const carregarDados = () => {
-      const dados = Object.keys(localStorage)
-        .filter((key) => key) // Filter out null or undefined keys
-        .map((key) => {
-          const dado = localStorage.getItem(key);
-          return dado ? JSON.parse(dado) : null;
-        })
-        .filter(Boolean); // Filter out null values
+    const locaisSalvos = localStorage.getItem("locais");
+    if (locaisSalvos) {
+      setLocais(JSON.parse(locaisSalvos));
+    }
 
-      setDadosTabela(dados);
-    };
-
-    carregarDados();
-    const atualizarTabelaListener = () => carregarDados();
-    window.addEventListener("atualizarTabela", atualizarTabelaListener);
-
-    return () => {
-      window.removeEventListener("atualizarTabela", atualizarTabelaListener);
-    };
+    const medicoesSalvas = localStorage.getItem("medicoes");
+    if (medicoesSalvas) {
+      setMedicoes(JSON.parse(medicoesSalvas));
+    }
   }, []);
 
-  const tabelaContent = useMemo(
-    () =>
-      dadosTabela.map((dado, index) => (
-        <tr key={index}>
-          <td>{dado.local}</td>
-          <td>{dado.nivelSinal}</td>
-          <td>{dado.velocidadeSinal}</td>
-          <td>{dado.interferencia}</td>
-        </tr>
-      )),
-    [dadosTabela]
-  );
-
   return (
-    <div className="container">
-      <div className="resultados">
-        <div>
-          <table>
-            <thead>
-              <tr>
-                <th>Local</th>
-                <th>Nível</th>
-                <th>Velocidade</th>
-                <th>Interferência</th>
-              </tr>
-            </thead>
-            <tbody>{tabelaContent}</tbody>
-          </table>
+    <>
+    <section className="bg-light p-4 rounded">
+        <div className="container mt-4">
+          <h1 className="mb-4">RESULTADO ÚLTIMAS LEITURAS</h1>
         </div>
-        <div className="grafico">
-          <SimpleCharts/>
+        <BarChart
+        xAxis={[
+          {
+            id: "locais",
+            data: medicoes
+              .map((medicao) => medicao.local)
+              .filter((v, i, a) => a.indexOf(v) === i),
+            scaleType: "band",
+          },
+        ]}
+        series={[
+          {
+            id: "Nivel de Sinal",
+            label: "Nível de Sinal",
+            data: medicoes
+              .filter((medicao) =>
+                !isNaN(parseFloat(medicao.nivelSinal))
+              )
+              .reduce<{ local: string; valor: number }[]>((acc, medicao) => {
+                const index = acc.findIndex((item) => item.local === medicao.local);
+                if (index === -1) {
+                  acc.push({
+                    local: medicao.local,
+                    valor: parseFloat(medicao.nivelSinal),
+                  });
+                } else {
+                  acc[index].valor = parseFloat(medicao.nivelSinal);
+                }
+                return acc;
+              }, [])
+              .map((item) => item.valor),
+          },
+          {
+            id: "Interferencia",
+            label: "Interferencia",
+            data: medicoes
+              .filter((medicao) =>
+                !isNaN(parseFloat(medicao.interferencia))
+              )
+              .reduce<{ local: string; valor: number }[]>((acc, medicao) => {
+                const index = acc.findIndex((item) => item.local === medicao.local);
+                if (index === -1) {
+                  acc.push({
+                    local: medicao.local,
+                    valor: parseFloat(medicao.interferencia),
+                  });
+                } else {
+                  acc[index].valor = parseFloat(medicao.interferencia);
+                }
+                return acc;
+              }, [])
+              .map((item) => item.valor),
+          },
+        ]}
+        width={1000}
+        height={350}
+      />
+        <div className="container mt-4">
+          <h1 className="mb-4">RESULTADOS VELOCIDADE</h1>
         </div>
-      </div>
-    </div>
+        <BarChart
+        xAxis={[
+          {
+            id: "locais",
+            data: medicoes
+              .map((medicao) => `${medicao.local} (${medicao.nghz || medicao.vghz})`)
+              .filter((v, i, a) => a.indexOf(v) === i), // Filtra combinações únicas de local e banda
+            scaleType: "band",
+          },
+        ]}
+        series={[
+          {
+            id: "Velocidade do Sinal",
+            label: "Velocidade do Sinal",
+            data: medicoes
+              .filter((medicao) =>
+                !isNaN(parseFloat(medicao.velocidadeSinal))
+              )
+              .reduce<{ local: string; valor: number }[]>((acc, medicao) => {
+                const index = acc.findIndex((item) => item.local === medicao.local);
+                if (index === -1) {
+                  acc.push({
+                    local: medicao.local,
+                    valor: parseFloat(medicao.velocidadeSinal),
+                  });
+                } else {
+                  acc[index].valor = parseFloat(medicao.velocidadeSinal);
+                }
+                return acc;
+              }, [])
+              .map((item) => item.valor),
+          },
+        ]}
+        width={1000}
+        height={350}
+      />
+      </section>
+    </>
   );
 }
 
