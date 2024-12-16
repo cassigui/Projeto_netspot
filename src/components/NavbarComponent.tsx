@@ -19,12 +19,12 @@ const Navbar: FC = () => {
           </li>
           <li className="nav-item">
             <NavLink
-              to="/medicoes"
+              to="/resultados"
               className={({ isActive }) =>
                 isActive ? "nav-link text-primary fw-bold fs-5" : "nav-link text-white fs-5"
               }
             >
-              Medições
+              Resultados
             </NavLink>
           </li>
         </ul>
