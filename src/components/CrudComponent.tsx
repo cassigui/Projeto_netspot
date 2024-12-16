@@ -1,6 +1,8 @@
 import { FormEvent, useState, useEffect } from "react";
-import { useParams } from "react-router-dom"; // Importar o hook useParams
+import { useParams } from "react-router-dom";
 import "./CrudComponent.css";
+import GraficoVelocidadeLocal from "./GraficoVelocidadeLocal";
+import GraficoSinalLocal from "./GraficoSinalLocal";
 
 function Crud() {
   const initialFormState = {
@@ -80,7 +82,7 @@ function Crud() {
     window.dispatchEvent(new Event("atualizarTabela"));
   };
 
-  const handleRemoveLocal = (idMedicao: number) => {
+  const handleRemoveMedicao = (idMedicao: number) => {
     const updatedMedicoes = medicoes.filter((entry) => entry.id !== idMedicao);
     localStorage.setItem("medicoes", JSON.stringify(updatedMedicoes));
     setMedicoes(updatedMedicoes);
@@ -302,18 +304,23 @@ function Crud() {
                       <td>{entry.nghz}</td>
                       <td>{entry.interferencia}</td>
                       <td>{entry.velocidadeSinal}</td>
-                      <td>                      <button
-                        className="btn btn-danger fw-bold text-light"
-                        onClick={() => handleRemoveLocal(entry.id)}
-                      >
-                        Remover
-                      </button></td>
+                      <td>
+                        {" "}
+                        <button
+                          className="btn btn-danger fw-bold text-light"
+                          onClick={() => handleRemoveMedicao(entry.id)}
+                        >
+                          Remover
+                        </button>
+                      </td>
                     </tr>
                   ))}
               </tbody>
             </table>
           </div>
         </div>
+        <GraficoVelocidadeLocal local={formData.local} medicoes={medicoes}></GraficoVelocidadeLocal>
+        <GraficoSinalLocal local={formData.local} medicoes={medicoes}></GraficoSinalLocal>
       </section>
     </>
   );

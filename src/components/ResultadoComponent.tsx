@@ -90,11 +90,9 @@ function Resultado() {
               .map((item) => item.valor),
           },
         ]}
-        width={500}
-        height={300}
+        width={1000}
+        height={350}
       />
-      </section>
-      <section className="bg-light p-4 rounded">
         <div className="container mt-4">
           <h1 className="mb-4">RESULTADOS VELOCIDADE</h1>
         </div>
@@ -131,8 +129,8 @@ function Resultado() {
               .map((item) => item.valor),
           },
         ]}
-        width={500}
-        height={300}
+        width={1000}
+        height={350}
       />
       </section>
     </>
